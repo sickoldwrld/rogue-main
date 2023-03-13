@@ -1,0 +1,154 @@
+#include <ncurses.h>
+#include <stdlib.h>
+#include <time.h>
+#include <stdbool.h>
+
+int py, px;                                                               // character position
+int ey, ex;                                                                // entity position
+int player_credits = 0;                                                    // player gold-credits-money
+int ry,rx, r_size_y, r_size_x;                                             // room variables
+
+
+bool entity_placed = 0;
+bool player_placed = 0;
+bool room_placed = 0;
+
+
+
+int dungeon(int rows, int cols,  char (*map)[cols],int player){             // generate  dungeon map
+
+    srand(time(NULL));
+
+    
+
+    if(!room_placed){                                                       // random generate room
+        ry = rand() % (rows -3);
+        rx = rand() % (cols -3);
+        
+        r_size_y = rand() % 5 + 4;
+        r_size_x = rand() % 10 + 8;
+
+        room_placed = 1;
+    }
+
+
+    for (int yy = 0; yy <= rows; yy++)                                       // fill location
+    {
+        for(int xx = 0; xx <= cols; xx++){
+
+            map[yy][xx] = '#';
+            mvaddch(yy,xx, '#');
+            if(yy == 0 || yy == rows || xx == 0 || xx == cols){
+                map[yy][xx] = '%';
+                mvaddch(yy,xx, '%');
+            }
+            
+        }
+    }
+
+
+
+    for (int yy = ry; yy <= ry + r_size_y; yy++)                             // generate room
+    {
+        for(int xx = rx; xx <= rx + r_size_x ; xx++){
+            
+            
+            if(map[yy][xx] == '%')
+            {   
+                yy = ry + r_size_y;                                           // exit upper loop
+                break;                                                        // ... exit from current loop
+            }
+            {
+                map[yy][xx] = ' ';
+                mvaddch(yy,xx, ' ');
+            }
+        }
+    }
+    
+    
+    if(!entity_placed)
+    { 
+        do
+        {
+            ey = rand() % rows + 1;
+            ex = rand() % cols + 1;
+        }
+        while(map[ey][ex] == '#' || map[ey][ex] == '%');
+        entity_placed = 1;
+    }
+
+    if(!player_placed)
+    { 
+        do
+        {
+            py = rand() % rows;
+            px = rand() % cols;
+        }
+        while(map[py][px] == '#' || map[py][px] == '%');
+        player_placed = 1;
+    }
+
+
+    if      ((player == KEY_UP)      && (map[py-1][px] == ' ')) py--;        //
+    else if ((player == KEY_DOWN)    && (map[py+1][px] == ' ')) py++;        //         move key character 
+    else if ((player == KEY_LEFT)    && (map[py][px-1] == ' ')) px--;        //
+    else if ((player == KEY_RIGHT)   && (map[py][px+1] == ' ')) px++;        // 
+    
+
+
+
+    if (py == ey && px == ex)
+    {
+        entity_placed = 0;
+        player_credits += rand() % 10 + 1;
+        entity_placed = 0;
+        player_placed = 0;
+        room_placed = 0;
+    }
+
+
+
+    mvaddch(py,px,'@'); // print-move player
+    mvaddch(ey,ex,'g'); // print-move entity
+    mvprintw(rows, 0, "Credits %d", player_credits);
+
+
+    return 0;
+
+}
+int monster(){
+	return 0;
+}
+
+
+int main(void){
+    int player = 0; 																 // input
+    int cols, rows;                                                                  // Variable of cols rows     
+    initscr();
+    keypad(stdscr,TRUE); 															 // Allow F1-F12, ARROW //
+    noecho();                                                                        // Disable input 
+    curs_set(0);                                                                     // Disable cursor
+    getmaxyx(stdscr,rows,cols);                                                      // Set window size
+    char map[rows][cols];                                                            // array map symbols
+
+
+
+    do
+    { 
+        dungeon(rows -1,cols -1,map,player);
+        
+
+
+        
+    }
+    while ((player = getch()) != 27);
+
+    
+
+
+    
+    getch();
+    endwin();
+    return 0;
+
+}
