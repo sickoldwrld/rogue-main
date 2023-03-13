@@ -6,66 +6,105 @@
 int py, px;                                                               // character position
 int ey, ex;                                                                // entity position
 int player_credits = 0;                                                    // player gold-credits-money
-int ry,rx, r_size_y, r_size_x;                                             // room variables
+                                            // room variables
 
 
 bool entity_placed = 0;
 bool player_placed = 0;
-bool room_placed = 0;
+int  room_placed   = 0;
 
 
 
 int dungeon(int rows, int cols,  char (*map)[cols],int player){             // generate  dungeon map
 
+    bool collision = 0;
+
+    
     srand(time(NULL));
 
     
 
-    if(!room_placed){                                                       // random generate room
-        ry = rand() % (rows -3);
-        rx = rand() % (cols -3);
-        
-        r_size_y = rand() % 5 + 4;
-        r_size_x = rand() % 10 + 8;
-
-        room_placed = 1;
-    }
+    if(!room_placed)
+    {                                                                       // random generate room
+        int ry,rx; 
+        int r_size_y, r_size_x;
+        int room_num = rand() % 5 + 10;
+                                            
 
 
-    for (int yy = 0; yy <= rows; yy++)                                       // fill location
-    {
-        for(int xx = 0; xx <= cols; xx++){
-
-            map[yy][xx] = '#';
-            mvaddch(yy,xx, '#');
-            if(yy == 0 || yy == rows || xx == 0 || xx == cols){
-                map[yy][xx] = '%';
-                mvaddch(yy,xx, '%');
-            }
-            
-        }
-    }
-
-
-
-    for (int yy = ry; yy <= ry + r_size_y; yy++)                             // generate room
-    {
-        for(int xx = rx; xx <= rx + r_size_x ; xx++){
-            
-            
-            if(map[yy][xx] == '%')
-            {   
-                yy = ry + r_size_y;                                           // exit upper loop
-                break;                                                        // ... exit from current loop
-            }
+        for (int yy = 0; yy <= rows; yy++)                                  // fill dungeon and borders database
+        {   
+            for(int xx = 0; xx <= cols; xx++)
             {
-                map[yy][xx] = ' ';
+                // border
+                if(yy == 0 || yy == rows - 1  || xx == 0 || xx == cols || yy == rows){
+                    map[yy][xx] = '%';
+                }
+                // walls
+                else
+                    map[yy][xx] = '#';
+            
+            }
+        }
+
+        do
+        {
+                    // generate room coords
+            ry = rand() % (rows -3);
+            rx = rand() % (cols -3);
+            // room size
+            r_size_y = rand() % 5 + 4;
+            r_size_x = rand() % 10 + 8;
+
+        // fill DB
+            for (int yy = ry; yy <= ry + r_size_y; yy++)                             // generate room
+            {
+                for(int xx = rx; xx <= rx + r_size_x ; xx++){
+                    
+                    
+                    if(map[yy][xx] == '%')
+                    {   
+                        yy = ry + r_size_y;                                           // exit upper loop
+                        break;                                                        // ... exit from current loop
+                    }
+                    {
+                        map[yy][xx] = ' ';
+                        mvaddch(yy,xx, ' ');
+                    }
+                }
+            }
+            room_placed++;
+        } while(room_placed < room_num);
+    }
+
+
+  
+
+
+
+    for (int yy = 0; yy <= rows; yy++)                                       // draw location
+    {
+        for(int xx = 0; xx <= cols; xx++)
+        {
+            if(yy == rows )
+            {
                 mvaddch(yy,xx, ' ');
             }
+            else if(map[yy][xx] == '%')                                           //  draw border
+            {
+               mvaddch(yy,xx, '%');
+            }
+            else if (map[yy][xx] == ' ')
+            {
+                 mvaddch(yy,xx, ' ');
+            }
+            else
+               mvaddch(yy,xx, '#');
+            
         }
     }
-    
-    
+
+
     if(!entity_placed)
     { 
         do
@@ -101,9 +140,10 @@ int dungeon(int rows, int cols,  char (*map)[cols],int player){             // g
     {
         entity_placed = 0;
         player_credits += rand() % 10 + 1;
-        entity_placed = 0;
-        player_placed = 0;
         room_placed = 0;
+        player_placed = 0;
+
+
     }
 
 
@@ -116,9 +156,8 @@ int dungeon(int rows, int cols,  char (*map)[cols],int player){             // g
     return 0;
 
 }
-int monster(){
-	return 0;
-}
+
+
 
 
 int main(void){
