@@ -27,11 +27,13 @@ int dungeon(int rows, int cols,  char (*map)[cols],int player){             // g
     {                                                                       
         int ry,rx; 
         int r_size_y, r_size_x;
+        int room_old_center_y,room_old_center_x;
+        int room_center_y, room_center_x;
         int room_num = rand() % 5 + 10;
         bool collision;                                  
 
 
-        for (int yy = 0; yy <= rows; yy++){                                  // fill dungeon and borders database  
+        for (int yy = 0; yy <= rows; yy++){                                  // fill dungeon and borders database  http://rlgclub.ru/forum/viewtopic.php?f=7&t=32
 
             for(int xx = 0; xx <= cols; xx++)
             {
@@ -48,41 +50,41 @@ int dungeon(int rows, int cols,  char (*map)[cols],int player){             // g
 
         while (room_placed < room_num){   
             int try_counter =0;// prototyping room until collision
-            do {
-                collision =0;
-                try_counter++;
-                // generate room coords
-                ry = rand() % (rows -3);
-                rx = rand() % (cols -3);
-                // room size
-                r_size_y = rand() % 5 + 4;
-                r_size_x = rand() % 10 + 8;
+            
+            do{
+               collision =0;
+               try_counter++;
+               // generate room coords
+               ry = rand() % (rows -3);
+               rx = rand() % (cols -3);
+               // room size
+               r_size_y = rand() % 5 + 4;
+               r_size_x = rand() % 10 + 8;
 
 
-                for (int yy = ry; yy <= ry + r_size_y; yy++)                             // generate room
-                {
-                    
-                    for(int xx = rx; xx <= rx + r_size_x ; xx++){
+               for (int yy = ry; yy <= ry + r_size_y; yy++){                            // generate room
+					                    
+                   for(int xx = rx; xx <= rx + r_size_x ; xx++){
                         
                         
-                        if(map[yy][xx] == '%' || map[yy][xx] == ' ' 
-                        || map[yy + 2][xx] == ' ' || map[yy - 2][xx] == ' ' 
-                        || map[yy][xx+2] == ' ' || map[yy][xx-2] == ' ' )
-                        {   
-                            collision = 1;
-                            yy = ry + r_size_y;                                           // exit upper loop
-                            break;                                                        // ... exit from current loop
-                        }
-                    }
-                }
-                if (try_counter > 100){
-                    ry = rx = 3;
-                    r_size_y = r_size_x = 3;
-                    break;
+                       if(map[yy][xx] == '%' || map[yy][xx] == ' ' 
+                       || map[yy + 2][xx] == ' ' || map[yy - 2][xx] == ' ' 
+                       || map[yy][xx+2] == ' ' || map[yy][xx-2] == ' ' )
+                       {   
+                           collision = 1;
+                           yy = ry + r_size_y;                                           // exit upper loop
+                           break;                                                        // ... exit from current loop
+                       }
+                   }
+               }
+               if (try_counter > 100){
+                   ry = rx = 3;
+                   r_size_y = r_size_x = 3;
+                   break;
 
-                }
+               }
 
-            } while (collision == 1);
+            }while (collision == 1);
         
 
 
@@ -100,6 +102,35 @@ int dungeon(int rows, int cols,  char (*map)[cols],int player){             // g
                 }
             }
             room_placed++;
+            //center room coordinates
+            if (room_placed > 1){
+				room_old_center_y = room_center_y;
+				room_old_center_x = room_center_x;
+			}
+			room_center_y = ry + (r_size_y / 2); 
+			room_center_x = rx + (r_size_x / 2);
+			if (room_placed >1){
+				
+				int path_y;
+				for (path_y = room_old_center_y; path_y != room_center_y;){
+					map[path_y][room_center_x] = ' ';
+					if(room_old_center_y <  room_center_y)
+						path_y++;
+					else if(room_old_center_y >  room_center_y)
+						path_y--;
+				}
+				
+				
+				for (int x = room_old_center_x; x != room_center_x;){
+					map[path_y][x] = ' ';
+					if(room_old_center_x <  room_center_x)
+						x++;
+					else if(room_old_center_x >  room_center_x)
+						x--;
+				}
+			}
+			
+            
         } 
     }
 
